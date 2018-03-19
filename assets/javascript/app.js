@@ -1,9 +1,9 @@
 $(document).ready(function() {
 
     // Variables
-    let baseButton = '<a class="waves-effect waves-light btn-large"></a>';
     let questionBox = '<div class="col m12 center-align"><h3 id="question-text"></h3></div>';
     let currentQuestion;
+    let timer;
     let countDown = 10;
     
     // Question Objects
@@ -21,16 +21,26 @@ $(document).ready(function() {
         question: "The Eagles are part of which division?",
         correct: "NFC East",
         options: ["NFC North", "NFC East", "AFC East", "AFC North"]
-
+    }
+    let q4 = {
+        question: "Who is the eagles all-time leading rusher?",
+        correct: "Lesean McCoy",
+        options: ["Lesean McCoy", "Brian Westbrook", "Wilbert Montgomery", "Steve Van Buren"]
+    }
+    let q5 = {
+        question: "Who is the eagles all-time leading passer?",
+        correct: "Donovan McNabb",
+        options: ["Ron Jaworski", "Randall Cunningham", "Donovan McNabb", "Norm Snead"]
     }
 
     // Questions Array
-    let questionsArr = [q1, q2, q3]
+    let questionsArr = [q1, q2, q3, q4, q5]
 
 
     // Functions
-    function questionSetup(question) {
-        // Setup Question Section
+
+    // Setup Question Section
+    function questionSetup() {
         countDown = 10
         $("#main-row").append(questionBox)
         $("#question-text").text(currentQuestion.question)
@@ -42,45 +52,69 @@ $(document).ready(function() {
         }
         $("#main-container").append('<div class="row" id="timer-row"></div')
         $("#answer-row").append(`<div class="col m12 s12 center-align"><h1 id="countdown">10</h1></div>`)
+
+        timer = setInterval(function(){ 
+            countDown--
+            if (countDown <= 0) {
+                $("#countdown").text(countDown)
+                $("#main-row").empty()
+                $("#answer-row").remove()
+                $("#timer-row").remove()
+                $("#main-row").append(questionBox)
+                $("#question-text").text(`Incorrect, The correct answer is: ${currentQuestion.correct}`)
+                setTimeout(function(){ 
+                    $("#main-row").empty()
+                    questionPicker()
+                    questionSetup()
+                }, 3000);
+            } else {
+                $("#countdown").text(countDown)
+            }
+        }, 1000);
     };
 
+    // Randomly picks a question from the questions array
     function questionPicker() {
         let ranNum = Math.floor(Math.random() * questionsArr.length)
         currentQuestion = questionsArr[ranNum]
         questionsArr.splice(ranNum, 1)
     }
 
+    // Checks to see if the user selection is the correct answer
     function answerCheck(guess, answer) {
         if (guess === answer) {
+            clearInterval(timer)
             $("#main-row").empty()
             $("#answer-row").remove()
             $("#timer-row").remove()
-            questionPicker()
-            questionSetup(currentQuestion)
+            $("#main-row").append(questionBox)
+            $("#question-text").text(`Correct!`)
+            
+            setTimeout(function(){ 
+                 questionPicker()
+                 questionSetup()
+            }, 3000);
         } else {
+            clearInterval(timer)
+            $("#main-row").empty()
             $("#answer-row").remove()
             $("#timer-row").remove()
+            $("#main-row").append(questionBox)
+            $("#question-text").text(`Incorrect, The correct answer is: ${currentQuestion.correct}`)
+
+            setTimeout(function(){ 
+                 questionPicker()
+                 questionSetup()
+            }, 3000);
         }
     }
-
-    let timer = setInterval(function(){ 
-        countDown--
-        if (countDown <= 0) {
-            $("#countdown").text(countDown)
-            clearInterval(timer)
-        } else {
-            $("#countdown").text(countDown)
-        }
-    }, 1000);
 
     // Event Listeners
     $('#start-button').on('click', function () {
         $("#start-button-col").remove()
         questionPicker()
-        questionSetup(currentQuestion)
-        timer
+        questionSetup()
     })
-
 
     $(document).on("click", ".answer-button", function (event) {
         answerCheck(event.target.text, currentQuestion.correct)
